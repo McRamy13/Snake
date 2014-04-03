@@ -5,6 +5,8 @@
  */
 package snake;
 
+import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -17,17 +19,20 @@ public class Snake {
     private char[][] tablero;
     private int tamFila;
     private int tamCol;
-
+    //Declaramos un ArrayList de puntos (posición)
+    private ArrayList<Point> listaPosSnake = new ArrayList();
+    private byte sentidoMov;
+    private Random random = new Random();
     public static final char VACIO = '.';
     public static final char CABEZA = '@';
     public static final char CUERPO = '=';
     public static final char MURO = '#';
     public static final char FRUTA = '$';
 
-    public  static final int MARGEN = 2;
+    public static final int MARGEN = 2;
     //El tamaño inicial  del cuerpo no puede ser mayor que el margen
-    public  static final int TAM_INI_CUERPO = 2;
-    
+    public static final int TAM_INI_CUERPO = 2;
+
     public static final byte DERECHA = 0;
     public static final byte IZQUIERDA = 1;
     public static final byte ARRIBA = 2;
@@ -53,7 +58,6 @@ public class Snake {
             }
         }
         //Colocar la cabeza en posición aleatoria.
-        Random random = new Random();
         //Ponemos menos cuatro para que nos de un rango de valores válidos 
         //para que podamos poner la cabeza dentro de los márgenes.
         int cabezaFila = random.nextInt(tamFila - 2 * MARGEN) + MARGEN;
@@ -61,13 +65,28 @@ public class Snake {
 
         //PAra el ajedrez habría que poner estas líneas de manera reiterada sin necesidad de hacer números aleatorios
         tablero[cabezaFila][cabezaCol] = CABEZA;
+        //Añadir la cabeza a la posición
 
+        listaPosSnake.add(new Point(cabezaCol, cabezaFila));
         //Colocar el cuerpo
         for (int i = 1; i <= TAM_INI_CUERPO; i++) {
             tablero[cabezaFila][cabezaCol - i] = CUERPO;
+
+            listaPosSnake.add(new Point(cabezaCol - i, cabezaFila));
         }
+        generarFruta();
+    }
+    public void setSentidoMov(byte sentidoMov) {
+        this.sentidoMov = sentidoMov;
     }
     
+    private void generarFruta(){
+        int fila = random.nextInt(tamFila);
+        int col = random.nextInt(tamCol);
+        
+        tablero[fila][col] = FRUTA;
+    }
+
     public String toString() {
         String retorno = "";
         for (int f = 0; f < tamFila; f++) {
@@ -78,9 +97,51 @@ public class Snake {
         }
         return retorno;
     }
-    
-    public boolean mover(){
-        
+
+    public boolean mover() {
+        for (Point p : listaPosSnake) {
+            System.out.println(p);
+        }
+        Point nuevaCabeza = null;
+        //guardar posición actual de la cabeza
+        listaPosSnake.get(0);
+        Point antiguaCabeza = listaPosSnake.get(0);
+
+        //De la lista cogemos la última posición
+        //Borrar la cola antigua
+        Point antiguaCola = listaPosSnake.get(listaPosSnake.size() - 1);
+        tablero[antiguaCola.y][antiguaCola.x] = VACIO;
+        listaPosSnake.remove(listaPosSnake.size() - 1);
+
+        // //mover el punto de la cabeza
+        tablero[antiguaCabeza.y][antiguaCabeza.x] = CUERPO;
+        switch (sentidoMov) {
+            case DERECHA:
+                nuevaCabeza = new Point(antiguaCabeza.x + 1, antiguaCabeza.y);
+                break;
+            case IZQUIERDA:
+                nuevaCabeza = new Point(antiguaCabeza.x - 1, antiguaCabeza.y);
+                break;
+            case ARRIBA:
+                nuevaCabeza = new Point(antiguaCabeza.x, antiguaCabeza.y - 1);
+                break;
+            case ABAJO:
+                nuevaCabeza = new Point(antiguaCabeza.x, antiguaCabeza.y + 1);
+                break;
+
+        }
+
+        tablero[nuevaCabeza.y][nuevaCabeza.x] = CABEZA;
+        listaPosSnake.add(0, nuevaCabeza);
+
+        for (Point p : listaPosSnake) {
+            System.out.println(p);
+        }
+
+        return true;
+
     }
+
+    
 
 }
